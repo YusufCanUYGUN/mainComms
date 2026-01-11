@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MainCominotor - Control Center</title>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <style>
+        .hero {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        .hero h1 {
+            font-size: 2.5rem;
+            color: #e94560;
+            margin-bottom: 10px;
+        }
+        .hero p {
+            color: #888;
+            font-size: 1.1rem;
+            margin-bottom: 40px;
+        }
+        .sections-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        .section-card {
+            background: #16213e;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-decoration: none;
+            display: block;
+        }
+        .section-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(233, 69, 96, 0.2);
+        }
+        .section-card.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .section-card.disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+        .section-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        .section-card h3 {
+            color: #e94560;
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+        .section-card p {
+            color: #aaa;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        .section-card .status {
+            margin-top: 15px;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            display: inline-block;
+        }
+        .status-active {
+            background: rgba(40, 167, 69, 0.2);
+            color: #28a745;
+        }
+        .status-coming {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+        }
+        .status-planned {
+            background: rgba(108, 117, 125, 0.2);
+            color: #6c757d;
+        }
+        .auth-section {
+            text-align: center;
+            margin-top: 50px;
+            padding: 30px;
+        }
+        .auth-section a {
+            color: #e94560;
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 1.1rem;
+        }
+        .auth-section a:hover {
+            text-decoration: underline;
+        }
+        .user-welcome {
+            color: #28a745;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>MainCominotor</h1>
+        <p>Minecraft GTNH IC2 Reactor Management System</p>
+
+        <div th:if="${isAuthenticated}" class="user-welcome">
+            Welcome, <span th:text="${username}"></span>!
+        </div>
+    </div>
+
+    <div class="sections-grid">
+        <!-- OpenComputers Reactor Management -->
+        <a th:href="${isAuthenticated} ? @{/dashboard} : @{/auth/login}" class="section-card">
+            <div class="section-icon">⚛️</div>
+            <h3>Reactor Management</h3>
+            <p>Monitor and control IC2 reactors via OpenComputers. View heat levels, EU output, and enable/disable reactors remotely.</p>
+            <span class="status status-active">Active</span>
+        </a>
+
+        <!-- Battery Management -->
+        <a th:href="${isAuthenticated} ? @{/dashboard/battery} : @{/auth/login}" class="section-card">
+            <div class="section-icon">🔋</div>
+            <h3>Battery Management</h3>
+            <p>Track EU storage levels and manage automatic reactor scaling based on battery charge percentage.</p>
+            <span class="status status-active">Active</span>
+        </a>
+
+        <!-- API Keys -->
+        <a th:href="${isAuthenticated} ? @{/dashboard/api-keys} : @{/auth/login}" class="section-card">
+            <div class="section-icon">🔑</div>
+            <h3>API Keys</h3>
+            <p>Generate and manage API keys for your OpenComputers Lua clients. Secure authentication for all your devices.</p>
+            <span class="status status-active">Active</span>
+        </a>
+
+        <!-- AE2 Monitoring - Coming Soon -->
+        <div class="section-card disabled">
+            <div class="section-icon">📦</div>
+            <h3>AE2 Monitoring</h3>
+            <p>Monitor Applied Energistics 2 storage systems. Track item counts, crafting jobs, and storage usage.</p>
+            <span class="status status-coming">Coming Soon</span>
+        </div>
+
+        <!-- GT Machines - Planned -->
+        <div class="section-card disabled">
+            <div class="section-icon">⚙️</div>
+            <h3>GT Machine Control</h3>
+            <p>Monitor and control GregTech machines. View processing status, input/output, and machine efficiency.</p>
+            <span class="status status-planned">Planned</span>
+        </div>
+
+        <!-- Alerts & Notifications - Planned -->
+        <div class="section-card disabled">
+            <div class="section-icon">🔔</div>
+            <h3>Alerts & Notifications</h3>
+            <p>Set up alerts for critical events like reactor overheating, low battery, or machine failures.</p>
+            <span class="status status-planned">Planned</span>
+        </div>
+    </div>
+
+    <div class="auth-section">
+        <div th:if="${!isAuthenticated}">
+            <a th:href="@{/auth/login}">Login</a>
+            <a th:href="@{/auth/register}">Register</a>
+        </div>
+        <div th:if="${isAuthenticated}">
+            <a th:href="@{/dashboard}">Go to Dashboard</a>
+            <form th:action="@{/auth/logout}" method="post" style="display: inline;">
+                <button type="submit" class="btn btn-sm">Logout</button>
+            </form>
+        </div>
+    </div>
+
+    <footer style="text-align: center; padding: 40px; color: #666; font-size: 0.9rem;">
+        <p>MainCominotor - OpenComputers Reactor Management</p>
+        <p>API Base URL: <code>https://uygunfamily.duckdns.org/portakalapi/</code></p>
+    </footer>
+</body>
+</html>

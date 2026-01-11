@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Keys - MainCominotor</title>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">MainCominotor</div>
+        <div class="nav-links">
+            <a th:href="@{/dashboard}">Dashboard</a>
+            <a th:href="@{/dashboard/reactors}">Reactors</a>
+            <a th:href="@{/dashboard/battery}">Battery</a>
+            <a th:href="@{/dashboard/api-keys}" class="active">API Keys</a>
+        </div>
+        <div class="nav-user">
+            <form th:action="@{/auth/logout}" method="post" style="display: inline;">
+                <button type="submit" class="btn btn-sm">Logout</button>
+            </form>
+        </div>
+    </nav>
+
+    <main class="container">
+        <h1>API Keys</h1>
+
+        <div th:if="${success}" class="alert alert-success">
+            <span th:text="${success}"></span>
+        </div>
+
+        <div th:if="${newApiKey}" class="alert alert-warning api-key-display">
+            <strong>Your new API key:</strong>
+            <code th:text="${newApiKey}"></code>
+            <p><em>Copy this key now! It won't be shown again.</em></p>
+        </div>
+
+        <!-- Create New API Key -->
+        <div class="card">
+            <h3>Create New API Key</h3>
+            <form th:action="@{/dashboard/api-keys}" th:object="${createRequest}" method="post" class="inline-form">
+                <div class="form-group">
+                    <label for="name">Key Name</label>
+                    <input type="text" id="name" th:field="*{name}" placeholder="e.g., Reactor Controller 1" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Create Key</button>
+            </form>
+        </div>
+
+        <!-- Existing API Keys -->
+        <div class="card">
+            <h3>Your API Keys</h3>
+            <table class="data-table" th:if="${!#lists.isEmpty(apiKeys)}">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Created</th>
+                        <th>Last Used</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="key : ${apiKeys}">
+                        <td th:text="${key.name}"></td>
+                        <td th:text="${#temporals.format(key.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+                        <td th:text="${key.lastUsed != null ? #temporals.format(key.lastUsed, 'yyyy-MM-dd HH:mm') : 'Never'}"></td>
+                        <td>
+                            <span class="status-badge" th:classappend="${key.enabled ? 'status-online' : 'status-offline'}"
+                                  th:text="${key.enabled ? 'Active' : 'Revoked'}"></span>
+                        </td>
+                        <td class="action-buttons">
+                            <form th:if="${key.enabled}" th:action="@{/dashboard/api-keys/{id}/regenerate(id=${key.id})}" method="post" style="display: inline;">
+                                <button type="submit" class="btn btn-sm btn-warning">Regenerate</button>
+                            </form>
+                            <form th:if="${key.enabled}" th:action="@{/dashboard/api-keys/{id}/revoke(id=${key.id})}" method="post" style="display: inline;">
+                                <button type="submit" class="btn btn-sm btn-danger">Revoke</button>
+                            </form>
+                            <form th:action="@{/dashboard/api-keys/{id}/delete(id=${key.id})}" method="post" style="display: inline;">
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this key?')">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <p th:if="${#lists.isEmpty(apiKeys)}">No API keys created yet.</p>
+        </div>
+
+        <!-- Usage Instructions -->
+        <div class="card">
+            <h3>How to Use API Keys</h3>
+            <p>Include your API key in the <code>X-API-Key</code> header when making requests to the API:</p>
+            <pre>
+X-API-Key: your-api-key-here
+            </pre>
+            <p>API Endpoints:</p>
+            <ul>
+                <li><code>GET /portakalapi/opencomputers/reactormenagementV1/reactors</code> - List reactors</li>
+                <li><code>POST /portakalapi/opencomputers/reactormenagementV1/reactors</code> - Register reactor</li>
+                <li><code>PUT /portakalapi/opencomputers/reactormenagementV1/reactors/{id}</code> - Update reactor</li>
+                <li><code>GET /portakalapi/opencomputers/batterymanagement/status</code> - Get battery status</li>
+                <li><code>PUT /portakalapi/opencomputers/batterymanagement/status/{id}</code> - Update battery</li>
+            </ul>
+        </div>
+    </main>
+</body>
+</html>
